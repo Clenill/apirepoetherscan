@@ -19,6 +19,9 @@ public class Address {
     @Column(name = "address", unique = true)
     private String address;
 
+    @Column(name = "balance")
+    private String balance;
+
     @Column(name = "created_at")
     @DateTimeFormat(pattern = "yyyy-mm-dd")
     private LocalDate createdAt;
@@ -35,9 +38,10 @@ public class Address {
         this.address = "";// Non voglio stringhe null
     }
 
-    public Address(Long id, String address, LocalDate createdAt, LocalDate lastUpdateAt) {
+    public Address(Long id, String address,String balance, LocalDate createdAt, LocalDate lastUpdateAt) {
         this.id = id;
         this.address = address;
+        this.balance = balance;
         this.createdAt = createdAt;
         this.lastUpdateAt = lastUpdateAt;
     }
@@ -46,12 +50,14 @@ public class Address {
 
     public Long getId() {return this.id;}
     public String getAddress() {return this.address = address;}
+    public String getBalance() {return this.balance = address;}
     public LocalDate getCreatedAt() {return this.createdAt;}
     public LocalDate getLastUpdateAt() {return this.lastUpdateAt;}
     //Setter
 
     public void setId(Long id) {this.id = id;}
     public void setAddress(String address) {this.address = address;}
+    public void setBalance(String balance) {this.balance = balance;}
     public void setCreatedAt(LocalDate createdAt) {this.createdAt = createdAt;}
     public void setLastUpdateAt(LocalDate lastUpdateAt) {this.lastUpdateAt = lastUpdateAt;}
 

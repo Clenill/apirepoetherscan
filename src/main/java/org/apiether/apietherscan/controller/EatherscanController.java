@@ -52,7 +52,12 @@ public class EatherscanController {
         //Trova l'indirizzo nel DB
         Optional<Address> addressEntity = addressRepository.findByAddress(address);
         if(addressEntity.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode result = mapper.createObjectNode();
+            result.put("address", address);
+            result.put("messagge", "Indirizzo non presente.");
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
 
         List<Transaction> transactions = transactionRepository.findByAddressOrderByTimeStampAsc(addressEntity.get());
@@ -61,6 +66,7 @@ public class EatherscanController {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode responseJson = objectMapper.createObjectNode();
         responseJson.put("address", address);
+        responseJson.put("messagge", "Indirizzo presente nel Database.");
         ArrayNode transactionsArray = objectMapper.createArrayNode();
 
         // Aggiungiamo ogni transazione all'array

@@ -37,7 +37,7 @@ public class EatherscanController {
             if(result!= null){
                 return ResponseEntity.ok(result);
             }else{
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);//!!!!!!!!!!!!!!!Mi sembra inutile!!!!!
             }
 
         }catch(IOException e){

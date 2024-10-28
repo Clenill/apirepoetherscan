@@ -45,38 +45,45 @@ public class EtherscanService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonResponse = mapper.readTree(response);
 
-        //Chiamata per salvare o recuperare nel DB l'indirizzo cercato
-        Address addressEntity = addressService.salvaNuovoAddress(address);
+        String message = jsonResponse.get("message").asText();
+        String status = jsonResponse.get("status").asText();
 
-        // Si potrebbe aggiungere un controllo sul JSON, solo se si hanno risultati positivi procedere
-        //passare il result altrimenti se esito negativo gestire la risposta negativa
+        if("OK".equalsIgnoreCase(status) || "1".equals(status)) {
+            // prelevo il balance per l'address
+            String balance = getEtherBalanceForAddress(address);
+            //Chiamata per salvare o recuperare nel DB l'indirizzo cercato
+            Address addressEntity = addressService.salvaNuovoAddress(address, balance);
 
 
-        // Itera sulle transazioni e salva quelle non presenti
-        JsonNode transactions = jsonResponse.get("result");
+
+            // Itera sulle transazioni e salva quelle non presenti
+            JsonNode transactions = jsonResponse.get("result");
 
 
-        if(transactions != null) {
-            if(transactions.isArray()) {
-                for (JsonNode transactionNode : transactions) {
-                    String transactionHash = transactionNode.get("hash").asText();
+            if(transactions != null) {
+                if(transactions.isArray()) {
+                    for (JsonNode transactionNode : transactions) {
+                        String transactionHash = transactionNode.get("hash").asText();
 
-                    if(transactionService.salvaTransazione(transactionHash, transactionNode, addressEntity)){
+                        if(transactionService.salvaTransazione(transactionHash, transactionNode, addressEntity)){
+                            System.out.println("Transazione salvata correttamente");
+                        }else{
+                            System.out.println("Transazione non salvata perché presente nel DB.");
+                        }
+                    }
+                } else if (transactions.isObject()) {
+                    String transactionHash = transactions.get("hash").asText();
+
+                    if(transactionService.salvaTransazione(transactionHash, transactions, addressEntity)){
                         System.out.println("Transazione salvata correttamente");
                     }else{
                         System.out.println("Transazione non salvata perché presente nel DB.");
                     }
                 }
-            } else if (transactions.isObject()) {
-                String transactionHash = transactions.get("hash").asText();
-
-                if(transactionService.salvaTransazione(transactionHash, transactions, addressEntity)){
-                    System.out.println("Transazione salvata correttamente");
-                }else{
-                    System.out.println("Transazione non salvata perché presente nel DB.");
-                }
             }
+
         }
+
 
         return jsonResponse;
 

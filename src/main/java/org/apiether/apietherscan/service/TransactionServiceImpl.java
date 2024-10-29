@@ -4,8 +4,6 @@ import org.apiether.apietherscan.model.Address;
 import org.apiether.apietherscan.model.Transaction;
 import org.apiether.apietherscan.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
-import org.apiether.apietherscan.service.AddressServiceImpl;
-import java.math.BigInteger;
 import java.util.Optional;
 
 @Service

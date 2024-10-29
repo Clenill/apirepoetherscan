@@ -2,9 +2,7 @@ package org.apiether.apietherscan.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apiether.apietherscan.model.Transaction;
 import org.apiether.apietherscan.repository.AddressRepository;
 import org.apiether.apietherscan.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 import org.apiether.apietherscan.service.EtherscanService;
 import org.apiether.apietherscan.model.Address;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
 public class EatherscanController {
-    @Autowired
-    private EtherscanService etherscanService;
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private TransactionRepository transactionRepository;
+
+    private final EtherscanService etherscanService;
+    private final AddressRepository addressRepository;
+
+    public EatherscanController(AddressRepository addressRepository, EtherscanService etherscanService) {
+        this.addressRepository = addressRepository;
+        this.etherscanService = etherscanService;
+    }
 
     @GetMapping("/transactions/{address}")
     public ResponseEntity<JsonNode> getTransactions(@PathVariable("address") String address) {

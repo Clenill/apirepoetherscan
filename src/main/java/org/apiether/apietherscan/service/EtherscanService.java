@@ -1,15 +1,12 @@
 package org.apiether.apietherscan.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apiether.apietherscan.model.Transaction;
-import org.apiether.apietherscan.repository.AddressRepository;
 import org.apiether.apietherscan.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.apiether.apietherscan.model.Address;
@@ -18,7 +15,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EtherscanService {
@@ -27,17 +23,16 @@ public class EtherscanService {
     private final RestTemplate restTemplate;
     private final TransactionServiceImpl transactionService;
     private final AddressServiceImpl addressService;
-    private final AddressRepository addressRepository;
+
     private final TransactionRepository transactionRepository;
     // La chiave API viene letta da application.properties
     @Value("${etherscan.api.key}")
     private String apiKey;
 
     //Costruttore
-    public EtherscanService(RestTemplate restTemplate,TransactionRepository transactionRepository, TransactionServiceImpl transactionService, AddressServiceImpl addressService, AddressRepository addressRepository) {
+    public EtherscanService(RestTemplate restTemplate,TransactionRepository transactionRepository, TransactionServiceImpl transactionService, AddressServiceImpl addressService) {
         this.restTemplate = restTemplate;
         this.transactionRepository = transactionRepository;
-        this.addressRepository = addressRepository;
         this.transactionService = transactionService;
         this.addressService = addressService;
     }
@@ -97,6 +92,10 @@ public class EtherscanService {
                             transazione_trovata = true;
                         } else {
                             System.out.println("Transazione non salvata perché presente nel DB.");
+                            // si potrebbe uscire dal for quando trova una transazione presente perché l'ordinamento dell'API è desc
+                            // di conseguenza vengono salvate in questo ordine nel DB, altrimenti si potrebbe fare un riordino delle
+                            // transazioni e confrontare solo i timeStamp.
+                            //break;
                         }
                     }
                 }
@@ -119,13 +118,13 @@ public class EtherscanService {
         return composizioneRispostaJson(address, status, message, transazione_trovata);
     }catch (IOException e){
             System.err.println("Errore durante la lettura della risposta JSON: " + e.getMessage());
-            return composizioneRispostaJson(address, "0", "Errore durante la comunicazione con il server.", transazione_trovata);
+            return composizioneRispostaJson(address, "0", "Errore durante la comunicazione con il server.", false);
         }catch (NullPointerException e){
             System.err.println("Errore null pointer: " + e.getMessage());
-            return composizioneRispostaJson(address, "0", "Dati non trovati.", transazione_trovata);
+            return composizioneRispostaJson(address, "0", "Dati non trovati.", false);
         }catch(Exception e){
             System.err.println("Errore imprevisto: " + e.getMessage());
-            return composizioneRispostaJson(address, "0", "Si è verificato un errore imprevisto.", transazione_trovata);
+            return composizioneRispostaJson(address, "0", "Si è verificato un errore imprevisto.", false);
         }
 
     }
@@ -208,21 +207,24 @@ public class EtherscanService {
         responseJson.put("balance ETH", addressCercato.getBalance());
         ArrayNode transactionsArray = objectMapper.createArrayNode();
 
-        // For per aggiungere di ogni transazione all'array
-        //Aggiungere controllo su transactin != null
-        for (Transaction transaction : transactions) {
-            ObjectNode transactionJson = objectMapper.createObjectNode();
-            transactionJson.put("hash", transaction.getTransactionHash());
-            transactionJson.put("blockNumber", transaction.getBlockNumber());
-            transactionJson.put("timeStamp", transaction.getTimeStamp());
-            transactionJson.put("from", transaction.getFrom());
-            transactionJson.put("to", transaction.getTo());
-            transactionJson.put("value ETH", transaction.getValue());// Valore in Ethereum invece che in Wei
-            transactionJson.put("gasUsed", transaction.getGasUsed());
-            transactionsArray.add(transactionJson);
+        if(transactions != null){
+            // For per aggiungere di ogni transazione all'array
+            //Aggiungere controllo su transactin != null
+            for (Transaction transaction : transactions) {
+                ObjectNode transactionJson = objectMapper.createObjectNode();
+                transactionJson.put("hash", transaction.getTransactionHash());
+                transactionJson.put("blockNumber", transaction.getBlockNumber());
+                transactionJson.put("timeStamp", transaction.getTimeStamp());
+                transactionJson.put("from", transaction.getFrom());
+                transactionJson.put("to", transaction.getTo());
+                transactionJson.put("value ETH", convertWeiToEtherWith18Decimals(transaction.getValue()));// Valore in Ethereum invece che in Wei
+                transactionJson.put("gasUsed", transaction.getGasUsed());
+                transactionsArray.add(transactionJson);
+            }
+
+            responseJson.set("transactions", transactionsArray);
         }
 
-        responseJson.set("transactions", transactionsArray);
 
         return responseJson;
     }

@@ -51,7 +51,7 @@ public class Address {
 
     public Long getId() {return this.id;}
     public String getAddress() {return this.address = address;}
-    public String getBalance() {return this.balance = address;}
+    public String getBalance() {return this.balance = balance;}
     public LocalDateTime getCreatedAt() {return this.createdAt;}
     public LocalDateTime getLastUpdateAt() {return this.lastUpdateAt;}
     //Setter

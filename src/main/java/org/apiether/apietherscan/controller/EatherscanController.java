@@ -37,10 +37,14 @@ public class EatherscanController {
             if(result!= null){
                 return ResponseEntity.ok(result);
             }else{
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);//!!!!!!!!!!!!!!!Mi sembra inutile!!!!!
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode resultnull = mapper.createObjectNode();
+                resultnull.put("address", address);
+                resultnull.put("message", "Risposta null");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultnull);
             }
 
-        }catch(IOException e){
+        }catch(Exception e){
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 
@@ -55,36 +59,15 @@ public class EatherscanController {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode result = mapper.createObjectNode();
             result.put("address", address);
-            result.put("messagge", "Indirizzo non presente.");
+            result.put("message", "Indirizzo non presente nel DB.");
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
 
-        List<Transaction> transactions = transactionRepository.findByAddressOrderByTimeStampAsc(addressEntity.get());
+        Address addressCercato = addressEntity.get();
+        ObjectNode jsonCompilato = etherscanService.rispostaJsonAPI(addressCercato);
 
-        // Creiamo un oggetto JSON per la risposta
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectNode responseJson = objectMapper.createObjectNode();
-        responseJson.put("address", address);
-        responseJson.put("messagge", "Indirizzo presente nel Database.");
-        ArrayNode transactionsArray = objectMapper.createArrayNode();
-
-        // Aggiungiamo ogni transazione all'array
-        for (Transaction transaction : transactions) {
-            ObjectNode transactionJson = objectMapper.createObjectNode();
-            transactionJson.put("hash", transaction.getTransactionHash());
-            transactionJson.put("blockNumber", transaction.getBlockNumber());
-            transactionJson.put("timeStamp", transaction.getTimeStamp());
-            transactionJson.put("from", transaction.getFrom());
-            transactionJson.put("to", transaction.getTo());
-            transactionJson.put("value", transaction.getValue());
-            transactionJson.put("gasUsed", transaction.getGasUsed());
-            transactionsArray.add(transactionJson);
-        }
-
-        responseJson.set("transactions", transactionsArray);
-
-        return ResponseEntity.ok(responseJson);
+        return ResponseEntity.ok(jsonCompilato);
     }
 
 }

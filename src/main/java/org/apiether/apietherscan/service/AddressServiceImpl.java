@@ -19,7 +19,6 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Address salvaNuovoAddress(String address, String balance) {
         //Cerca se l'indirizzo è presente nel DB
-        // Si potrebbe implementare una logica per verificare la lunghezza e schema base dell'address
 
         Optional<Address> existingAddress = addressRepository.findByAddress(address);
         Address addressEntity;
@@ -28,14 +27,21 @@ public class AddressServiceImpl implements AddressService {
             addressEntity = new Address();
             addressEntity.setAddress(address);
             addressEntity.setBalance(balance);
-            //Mancano alcuni campi data
+            //I campi data sono assegnati successivamente
             addressRepository.save(addressEntity);
         }else{
             //Se invece l'address è presente faccio una get e ritorno l'entità
             addressEntity = existingAddress.get();
+            //Comparo le stringhe se sono  diverse assegno il nuovo balance e lo salvo
+            if(!addressEntity.getBalance().equals(balance)){
+                addressEntity.setBalance(balance);
+                addressRepository.save(addressEntity);
+            }
         }
         return addressEntity;
     }
+
+
 
     @Override
     public void verificatimeStampAddress(Address addressEntity, String timeStampString) {
@@ -57,8 +63,17 @@ public class AddressServiceImpl implements AddressService {
             if(modifica){
                 addressRepository.save(addressEntity);
             }
+    }
+    @Override
+    public boolean controllaUltimotimeStamp(String ultimotimeStamp, Address addressEntity){
+        //Conversione in LocalDateTime
+        long timeStamp = Long.parseLong(ultimotimeStamp);
+        LocalDateTime transactionDate = LocalDateTime.ofInstant(Instant.ofEpochSecond(timeStamp), ZoneOffset.UTC);
+        // se le date sono uguali restituisco true e non c'è bisogno di entrare nel for
+        if(addressEntity.getLastUpdateAt() != null && transactionDate.isEqual(addressEntity.getLastUpdateAt())){
+            return true;
+        }
 
-
-
+        return false;
     }
 }

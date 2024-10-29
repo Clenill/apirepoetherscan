@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -46,12 +45,11 @@ public class Address {
         this.createdAt = createdAt;
         this.lastUpdateAt = lastUpdateAt;
     }
-
     //Getter
 
     public Long getId() {return this.id;}
-    public String getAddress() {return this.address = address;}
-    public String getBalance() {return this.balance = balance;}
+    public String getAddress() {return this.address;}
+    public String getBalance() {return this.balance;}
     public LocalDateTime getCreatedAt() {return this.createdAt;}
     public LocalDateTime getLastUpdateAt() {return this.lastUpdateAt;}
     //Setter

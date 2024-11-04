@@ -23,7 +23,7 @@ Caratteristiche principali:
 Il programma è composto da due tabelle: Address e Transaction, correlate al relativo Database Postgre.
 Ogni Transaction è associata ad un Address, è possibile salvare e visualizzare le transazioni associate ad un Address tramite due diverse chiamate:
 1. "http://localhost:porta/transactions/address", effettuare questa chiamata per popolare le Transaction per un Address. Assicurarsi di sostituire "porta" che in questo caso coincide con quella di default per un'applicazione spring e "address" che corrisponde all'indirizzo Ethereum che si vuole analizzare. 
-<br>La risposta è composta da un JSON che contiene, oltre alle altre, due voci per interpretare l'esito della chiamata status pari a 1 e message OK in caso di esito positivo del recupero delle transazioni associate, in questo caso si sfrutta l'API di Etherscan per analizzare le transazioni dell'indirizzo.
+<br>La risposta è composta da un JSON che contiene, oltre alle altre, due voci per interpretare l'esito della risposta "status" pari a 1 e "message" OK in caso di esito positivo del recupero delle transazioni associate, in questo caso si sfruttano le API di Etherscan per analizzare le transazioni dell'indirizzo e il relativo Balance.
 2. "http://localhost:porta/indirizzo/transactions?address=addressdaverificare", con questa chiamata si visualizzeranno le Transaction e Balance per un Address specifico. Anche in questo caso sostituire "porta" con quella stabilita e "addressdaverificare" con l'indirizzo desiderato. In questo caso la risposta è sempre un JSON che mostrerà l'address inserito il balance associato ad esso e le transazioni associate all'address ordinate cronologicamente dalla meno recente alla più recente. <br>
 
 Le API da Etherscan utilizzate sono le seguenti:
@@ -36,6 +36,7 @@ Le API da Etherscan utilizzate sono le seguenti:
     &tag=latest
     &apikey=YourApiKeyToken
 <br>
+
 * Chiamata per prelevare le Transaction associate ad un Address:
 <br>
   https://api.etherscan.io/api

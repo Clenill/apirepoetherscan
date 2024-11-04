@@ -29,7 +29,6 @@ Ogni Transaction è associata ad un Address, è possibile salvare e visualizzare
 Le API da Etherscan utilizzate sono le seguenti:
 <br>
 * Chiamata per prelevare il balance di un Address:
-<br>
     https://api.etherscan.io/api?module=account
     &action=balance
     &address=address
@@ -38,7 +37,6 @@ Le API da Etherscan utilizzate sono le seguenti:
 <br>
 
 * Chiamata per prelevare le Transaction associate ad un Address:
-<br>
   https://api.etherscan.io/api
   ?module=account
   &action=txlist

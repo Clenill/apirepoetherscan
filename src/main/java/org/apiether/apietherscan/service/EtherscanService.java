@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apiether.apietherscan.model.Transaction;
 import org.apiether.apietherscan.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.apiether.apietherscan.model.Address;
 
@@ -19,10 +22,11 @@ import java.util.List;
 @Service
 public class EtherscanService {
 
-    private static final String ETHERSCAN_API_URL = "https://api.etherscan.io/api";
+    private final String ETHERSCAN_API_URL = "https://api.etherscan.io/api";
     private final RestTemplate restTemplate;
     private final TransactionServiceImpl transactionService;
     private final AddressServiceImpl addressService;
+    private final RestClient restClient;
 
     private final TransactionRepository transactionRepository;
     // La chiave API viene letta da application.properties
@@ -30,7 +34,8 @@ public class EtherscanService {
     private String apiKey;
 
     //Costruttore
-    public EtherscanService(RestTemplate restTemplate,TransactionRepository transactionRepository, TransactionServiceImpl transactionService, AddressServiceImpl addressService) {
+    public EtherscanService(RestClient restClient, RestTemplate restTemplate,TransactionRepository transactionRepository, TransactionServiceImpl transactionService, AddressServiceImpl addressService) {
+        this.restClient = restClient;
         this.restTemplate = restTemplate;
         this.transactionRepository = transactionRepository;
         this.transactionService = transactionService;
@@ -52,7 +57,14 @@ public class EtherscanService {
         try {
 
 
-        String response = restTemplate.getForObject(url, String.class);
+        //String response = restTemplate.getForObject(url, String.class);
+
+        String response = restClient
+                .method(HttpMethod.GET)
+                .uri(url)
+                .retrieve()
+                .body(String.class);
+
 
         // Conversione della risposta JSON in JsonNode
         ObjectMapper mapper = new ObjectMapper();
@@ -116,13 +128,20 @@ public class EtherscanService {
         // Costruzione JSON di risposta
 
         return composizioneRispostaJson(address, status, message, transazione_trovata);
-    }catch (IOException e){
+    }
+        catch(RestClientException e){
+            System.err.println("Errore durente la chiamata REST: "+ e.getMessage());
+            return composizioneRispostaJson(address, "0", "Errore durante la chiamata REST", false);
+        }
+        catch (IOException e){
             System.err.println("Errore durante la lettura della risposta JSON: " + e.getMessage());
             return composizioneRispostaJson(address, "0", "Errore durante la comunicazione con il server.", false);
-        }catch (NullPointerException e){
+        }
+        catch (NullPointerException e){
             System.err.println("Errore null pointer: " + e.getMessage());
             return composizioneRispostaJson(address, "0", "Dati non trovati.", false);
-        }catch(Exception e){
+        }
+        catch(Exception e){
             System.err.println("Errore imprevisto: " + e.getMessage());
             return composizioneRispostaJson(address, "0", "Si è verificato un errore imprevisto.", false);
         }
